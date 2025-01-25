@@ -1,15 +1,62 @@
-from langgraph import Node
-import mysql.connector  # or psycopg2 for PostgreSQL
+import mysql.connector
 
-class RetrieveSupplierData(Node):
-    def __init__(self, db_connection):
-        super().__init__()
-        self.db_connection = db_connection
-    
-    def run(self, params):
-        cursor = self.db_connection.cursor(dictionary=True)
-        query = "SELECT * FROM suppliers WHERE id = %s"
-        cursor.execute(query, (params['supplier_id'],))
-        supplier_data = cursor.fetchone()
-        cursor.close()
-        return supplier_data
+def connect_to_database():
+    connection = mysql.connector.connect(
+        host="localhost",        # Your database host
+        user="root",             # Your database user
+        password="password",     # Your database password
+        database="store_db"      # Your database name
+    )
+    return connection
+
+def fetch_products_by_category(category):
+    connection = connect_to_database()
+    cursor = connection.cursor(dictionary=True)
+    query = "SELECT name, brand, price, description FROM Products WHERE category = %s"
+    cursor.execute(query, (category,))
+    products = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return products
+
+def fetch_supplier_info(supplier_name):
+    connection = connect_to_database()
+    cursor = connection.cursor(dictionary=True)
+    query = """
+    SELECT s.name, s.contact_info, p.name AS product_name, p.price
+    FROM Suppliers s
+    JOIN Products p ON s.id = p.supplier_id
+    WHERE s.name = %s
+    """
+    cursor.execute(query, (supplier_name,))
+    supplier_info = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return supplier_info
+
+def fetch_product_details(product_id):
+    connection = connect_to_database()
+    cursor = connection.cursor(dictionary=True)
+    query = """
+    SELECT p.name, p.brand, p.price, p.category, p.description, s.name AS supplier_name
+    FROM Products p
+    JOIN Suppliers s ON p.supplier_id = s.id
+    WHERE p.id = %s
+    """
+    cursor.execute(query, (product_id,))
+    product_details = cursor.fetchone()
+    cursor.close()
+    connection.close()
+    return product_details
+
+# Example usage
+category = 'electronics'
+products = fetch_products_by_category(category)
+for product in products:
+    print(f"Product: {product['name']}, Brand: {product['brand']}, Price: {product['price']}")
+
+supplier_name = 'TechStore Inc.'
+supplier_info = fetch_supplier_info(supplier_name)
+for info in supplier_info:
+    print(f"Supplier: {info['name']}, Contact: {info['contact_info']}, Product: {info['product_name']}, Price: {info['price']}")
+
