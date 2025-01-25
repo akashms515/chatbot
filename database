@@ -1,0 +1,41 @@
+CREATE TABLE Suppliers (
+    id INT AUTO_INCREMENT PRIMARY KEY,        -- Supplier ID
+    name VARCHAR(255) NOT NULL,                -- Supplier Name
+    contact_info TEXT,                         -- Contact Information (email, phone, etc.)
+    product_categories TEXT                   -- Categories of products offered (e.g., "electronics, furniture")
+);
+CREATE TABLE Products (
+    id INT AUTO_INCREMENT PRIMARY KEY,        -- Product ID
+    name VARCHAR(255) NOT NULL,                -- Product Name
+    brand VARCHAR(100),                        -- Product Brand
+    price DECIMAL(10, 2),                      -- Product Price
+    category VARCHAR(100),                     -- Product Category (e.g., electronics, furniture)
+    description TEXT,                          -- Product Description
+    supplier_id INT,                           -- Foreign key to Suppliers
+    FOREIGN KEY (supplier_id) REFERENCES Suppliers(id) ON DELETE CASCADE
+);
+INSERT INTO Suppliers (name, contact_info, product_categories) VALUES
+('TechStore Inc.', 'contact@techstore.com, +1234567890', 'electronics, gadgets, accessories'),
+('Furniture Hub', 'support@furniturehub.com, +0987654321', 'furniture, home decor'),
+('SuperMart', 'hello@supermart.com, +1122334455', 'groceries, home essentials');
+SELECT p.name, p.brand, p.price, p.description
+FROM Products p
+WHERE p.category = 'electronics';
+SELECT p.name, p.brand, p.price, p.category, p.description
+FROM Products p
+JOIN Suppliers s ON p.supplier_id = s.id
+WHERE s.name = 'TechStore Inc.';
+SELECT p.name, p.brand, p.price, p.category, p.description
+FROM Products p
+WHERE p.price < 1000;
+SELECT p.name, p.brand, p.price, p.description
+FROM Products p
+JOIN Suppliers s ON p.supplier_id = s.id
+WHERE s.name = 'TechStore Inc.' AND p.category = 'electronics';
+SELECT s.name, s.contact_info
+FROM Suppliers s
+WHERE s.product_categories LIKE '%electronics%';
+SELECT p.name, p.brand, p.price, p.category, p.description, s.name AS supplier_name
+FROM Products p
+JOIN Suppliers s ON p.supplier_id = s.id
+WHERE p.id = 1;  -- Assume the product ID is 1
