@@ -1,0 +1,15 @@
+from langgraph import Node
+import mysql.connector  # or psycopg2 for PostgreSQL
+
+class RetrieveSupplierData(Node):
+    def __init__(self, db_connection):
+        super().__init__()
+        self.db_connection = db_connection
+    
+    def run(self, params):
+        cursor = self.db_connection.cursor(dictionary=True)
+        query = "SELECT * FROM suppliers WHERE id = %s"
+        cursor.execute(query, (params['supplier_id'],))
+        supplier_data = cursor.fetchone()
+        cursor.close()
+        return supplier_data
